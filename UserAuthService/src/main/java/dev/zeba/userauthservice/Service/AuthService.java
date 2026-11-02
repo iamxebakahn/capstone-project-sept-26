@@ -7,11 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public User signup(String email, String password){
             if(userRepository.existsByEmail(email)){
@@ -27,6 +30,15 @@ public class AuthService {
         //salt(random value added to generate hash)+password : 22 chars + 31 chars
         user.setRole(Role.USER);
         return userRepository.save(user);
+    }
+
+    public String login(String email,String password){
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if(optionalUser.isEmpty() || !passwordEncoder.matches(password,optionalUser.get().getPasswordHash())){ //coz decoding isn't possible hence password is hashed and then matched with db hash of password
+            return null;
+        }
+
+        return jwtService.generateToken(optionalUser.get());
     }
 }
 
