@@ -3,8 +3,10 @@ import dev.zeba.userauthservice.Service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 //for configuration of filters: config chain
@@ -23,9 +25,10 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(csrf -> csrf.disable()) //browser with banking page opened, user logged in, hence token & session info is already with browser, user opens new tab and opens malicious link by mistake, this new website might use same session details to send to server, k/a cross site req forgery, bad user from some other site has used user's creds from diff site to make req, chance hackers might send session/csrf tokens hence stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //make session mgmt stateless
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))//Added this coz in case of wrong token, 403 was coming and not 401; need to tell exception handler to actually specify req if they are being filtered out by auth filter
                 .addFilterBefore(new JwtFilter(jwtService), UsernamePasswordAuthenticationFilter.class)   //filter to be placed b4 which default filter? before usernameauth
                 .authorizeHttpRequests(auth -> // 2nd filter: for signup / login we should not ask user to authenticate? no! should be publically available
-                        auth.requestMatchers("/auth/**","/error")  //** = anything which comes after it
+                        auth.requestMatchers("/auth/**","/error")  //** = anything which comes after it //spring routes to error page in case of 4xx, 5xx page! /error should be public else we'll see 401 always
                                 .permitAll()   //permitted to everyone; public, no authentication needed
                                 .anyRequest().authenticated() //apart from this all other requests be authenticated
                 );
