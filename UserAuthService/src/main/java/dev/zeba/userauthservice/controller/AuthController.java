@@ -25,7 +25,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@Valid @RequestBody AuthRequest authRequest){
+    public ResponseEntity<UserDto> signup(@Valid @RequestBody AuthRequest authRequest){ //@Valid activates annotations in DTO
 
         User user = authService.signup(authRequest.getEmail(),authRequest.getPassword());
         if(user == null){
@@ -99,5 +99,7 @@ exception filter: default filter in dispatcher servlet; anonymous user in case a
 last job of every filter: pass req to next ; hence .dofilter(): last line; if coder forgets to write this line: req is halted at filter 1, doesn't move to next filter
 
 
-After adding dependencies of security, getting basic frontend form: coz of filter, we'll use our own filter to bypass it
+After adding dependencies of security (spring security), getting default filter(.formLogin) (UsernamePasswordAuthenticationFilter)for every endpoint along with basic frontend form: coz of filter, we'll use our own filter to bypass it
+need to write our own filters to bypass default filter given by spring
+hence login form is also gone now
 * */
