@@ -75,6 +75,11 @@ public class AuthController {
         }
 
     }
+
+    @GetMapping("/healthcheck")
+    public ResponseEntity<String> healthCheck() {
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+    }
 }
 
 /* user signup -> protected endpoint (login) -> gets token -> access end point (getProduct)-> email/password is not passed on every request,
