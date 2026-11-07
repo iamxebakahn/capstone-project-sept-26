@@ -170,4 +170,9 @@ public class ProductController {
         return new PagedModel<>(productDtos);
         //page number, page size, sort on which attribute : can be passed via pagedmodel
     }
+
+    @GetMapping("/healthcheck")
+    public ResponseEntity<String> healthCheck() {
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+    }
 }
