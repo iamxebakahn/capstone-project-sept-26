@@ -1,6 +1,5 @@
 package dev.zeba.productcatalogservice.controller;
 
-import dev.zeba.productcatalogservice.dto.CategoryDto;
 import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.dto.ProductPitchDto;
 import dev.zeba.productcatalogservice.mappers.ProductMapper;
@@ -84,24 +83,6 @@ public class ProductController {
     //http response has 3 parts: headers, body/content, status code
     //ResponseEntity : for response body + status code (for web API, response body is default reponse type)
 
-    private  ProductDto from(Product product){
-        ProductDto productDto = new ProductDto();
-        productDto.setId(product.getId());
-        productDto.setName(product.getName());
-        productDto.setDescription(product.getDescription());
-        productDto.setPrice(product.getPrice());
-        productDto.setImageUrl(product.getImageUrl());
-
-        if(product.getCategory()!=null) {
-            CategoryDto categoryDto = new CategoryDto();
-            categoryDto.setDescription(product.getCategory().getDescription());
-            categoryDto.setId(product.getCategory().getId());
-            categoryDto.setName(product.getCategory().getName());
-            productDto.setCategoryDto(categoryDto);
-        }
-        return productDto;
-    }
-
     @GetMapping("/{id}/pitch")
     public ResponseEntity<ProductPitchDto> generatePitch(@PathVariable Long id){
         if(id<0)
@@ -142,7 +123,7 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
 
-        return new ResponseEntity<>(from(product),HttpStatus.OK);
+        return new ResponseEntity<>(productMapper.toDto(product),HttpStatus.OK);
     }
 
     @PatchMapping("/{id}")
@@ -154,7 +135,7 @@ public class ProductController {
         if(product == null){
             return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(from(product),HttpStatus.OK);
+        return new ResponseEntity<>(productMapper.toDto(product),HttpStatus.OK);
     }
 
     @GetMapping("/search")

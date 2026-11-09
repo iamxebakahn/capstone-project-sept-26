@@ -133,4 +133,54 @@ despite ok, health - ec2 being healthy - application working ! no - 502 Bad Gate
  why nginx : coz everything not offline anymore, internet involved here: 1 person on 2g, other on 5g - so 2g will get 1 packet or take time to get all packets of a request than 5g person, hence nginx is needed to buffer i.e collect all packets together and send it to app, coz there's no load balance n all, it has other jobs as well like decompression
  collecting + collating packets and sending to spring app is nginx hjob; nginx listens to 5000 port; but service is running on 8081
 
+CI/CD pipelines : continous deployment instead of uploading JARs again and again
+New Age Software dev:
+Agent: Open Code Skills / Claude Skills / Rovo (Conceptually everything remains same in every env; response might be diff for diff agent)
+Agent???
+chatgpt->upload file -> response -> answer it/verify (loop)
+
+Agent = model + harness + tools
+LLM Model vs agent /Plain AI model vs agent -> LLM: textual response only; Agents: does task-edit/delete/add/opens browser n so on
+model = LLM model: I gives text, it reads it, prepares answer
+ex: explain maven file
+agent needs to search file; search functionality is tool, reads file to understand and anwser
+agents dont have all powers: restricted powers; set of rules/permissions contained in harness; model feeds reposnse in harness - harness check rules and if it has powers it invokes tool to do the job
+access google drive: harness check rules and calls tools
+ex: explain maven file;agent needs to search file-> harness calls search tool->harness then takes tool response and calls models with response from tool/feedbacks the LLM
+entire proceess is automated / in loop
+claud code/open code/rovo ?? what are they?? they are harness specifically (if i am layman i would call it model)
+companies dont build models: only 2 companies build models: OpenAI, Anthropic: Rest other companies are building harness around them
+
+Framework to follow while doing agentic development:
+Define (problem) ->Delegate (AI model)->Verify (response)->Decide(what to do next)
+
+2 modes to work with agent:
+build: can actually invoke the tools
+plan: gives text responses, doesn't invoke any editable tools (do work in this, once you satisfied move to build mode)
+
+ Context Window/Request Context: everything given to agent in one chat session/one chat session memory. As context increases, model degrades! (hallucination) (generates false response to satisfy context you have given)
+ Safety First Guardrails:
+ * always have git enabled in project
+ * always ensure permissions you have given to agent (delete no way! avoid destructive permissions)
+ * ask, allow, deny permission (agent should always ask my permission, automatically does it: searching file/opening non secret file free to execute, says i cant do it for things i havenot defined)
+ * try to teach agent habits of your team (habits = skills)
+
+to define rule; create opencode.json (follows a certain schema)
+deleting - shell command/terminal command
+resource - commnad /resource permission needs to be applied to  (rm - delete commands in mac/linux); effect - ask/deny/allow
+git remove/find delete - other delete commands
+/sessions: stores sessions
+/export: gives export of sessions in json or anyother way (in cmd open -R file path)
+NOTES.md created: in case of leak ensure no secret info is kept . most new models will not reveal the hidden instructions for AI, but our free basic one did
+Prompt injection points need to be taken care of
+Customers can exploit chatbot
+Run the unit tests and tell me if they pass.:
+-DSKIPTESTS coz context loads file expecting data base test cases - we did not have, so its not a failure - its more of an expected result
+AGENTS.md: to teach model habits of my team, i write agents.md (eg. to ignore failure of context loads)
+prompt from me -> opencode opens AGENTS.md in context of a session -> then takes my content for processing
+Rules/Good practices to write around Agents.md:
+-short (file/rules to be small sized)- iterative process(keep improving it) - (opencode /init creates 1st version of AGENTS.md)
+in case of lot of test cases/skills : create subagents
+
+
  */

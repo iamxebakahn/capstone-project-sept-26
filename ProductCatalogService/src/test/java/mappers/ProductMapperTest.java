@@ -4,13 +4,16 @@ import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.mappers.ProductMapper;
 import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
+import dev.zeba.productcatalogservice.model.enums.State;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class ProductMapperTest {
 
@@ -55,6 +58,94 @@ public class ProductMapperTest {
         //if assert is not written/forgotten, test always passes
         /*Assert */
         assertNull(productDto.getCategoryDto());
+    }
+
+    private Product existingProduct() {
+        Product existing = new Product();
+        existing.setId(1L);
+        existing.setName("Mascara");
+        existing.setDescription("Volumising mascara");
+        existing.setPrice(new BigDecimal("9.99"));
+        existing.setImageUrl("https://cdn.shopnest/mascara.png");
+        existing.setCreatedAt(new Date(1_700_000_000_000L));
+        existing.setState(State.ACTIVE);
+        return existing;
+    }
+
+    @Test
+    public void whenOnlyNameSent_thenOnlyNameChanges() {
+        /*Arrange*/
+        ProductMapper productMapper = new ProductMapper();
+        Product existing = existingProduct();
+        ProductDto patch = new ProductDto();
+        patch.setName("Lipstick");
+
+        /*Act*/
+        Product result = productMapper.applyPatch(existing, patch);
+
+        /*Assert: only the sent field moved*/
+        assertEquals("Lipstick", result.getName());
+        assertEquals("Volumising mascara", result.getDescription());
+        assertEquals(new BigDecimal("9.99"), result.getPrice());
+        assertEquals("https://cdn.shopnest/mascara.png", result.getImageUrl());
+    }
+
+    @Test
+    public void whenOnlyPriceSent_thenOnlyPriceChanges() {
+        /*Arrange*/
+        ProductMapper productMapper = new ProductMapper();
+        Product existing = existingProduct();
+        ProductDto patch = new ProductDto();
+        patch.setPrice(new BigDecimal("12.50"));
+
+        /*Act*/
+        Product result = productMapper.applyPatch(existing, patch);
+
+        /*Assert: only the sent field moved*/
+        assertEquals(new BigDecimal("12.50"), result.getPrice());
+        assertEquals("Mascara", result.getName());
+        assertEquals("Volumising mascara", result.getDescription());
+        assertEquals("https://cdn.shopnest/mascara.png", result.getImageUrl());
+    }
+
+    @Test
+    public void whenEmptyDtoSent_thenNothingChanges() {
+        /*Arrange*/
+        ProductMapper productMapper = new ProductMapper();
+        Product existing = existingProduct();
+        ProductDto patch = new ProductDto();
+
+        /*Act*/
+        Product result = productMapper.applyPatch(existing, patch);
+
+        /*Assert: absent fields are null in the DTO and must be left untouched*/
+        assertEquals("Mascara", result.getName());
+        assertEquals("Volumising mascara", result.getDescription());
+        assertEquals(new BigDecimal("9.99"), result.getPrice());
+        assertEquals("https://cdn.shopnest/mascara.png", result.getImageUrl());
+    }
+
+    @Test
+    public void whenPatchSent_thenIdCreatedAtAndStateNeverChange() {
+        /*Arrange*/
+        ProductMapper productMapper = new ProductMapper();
+        Product existing = existingProduct();
+        Date createdAt = existing.getCreatedAt();
+        ProductDto patch = new ProductDto();
+        patch.setId(99L); //client-supplied id must be ignored
+        patch.setName("Lipstick");
+        patch.setDescription("Matte lipstick");
+        patch.setPrice(new BigDecimal("12.50"));
+        patch.setImageUrl("https://cdn.shopnest/lipstick.png");
+
+        /*Act*/
+        Product result = productMapper.applyPatch(existing, patch);
+
+        /*Assert*/
+        assertSame(existing, result);
+        assertEquals(1L, result.getId());
+        assertSame(createdAt, result.getCreatedAt());
+        assertEquals(State.ACTIVE, result.getState());
     }
 }
 

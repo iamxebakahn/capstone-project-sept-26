@@ -26,6 +26,26 @@ public class ProductMapper {
         return productDto;
     }
 
+    public Product applyPatch(Product existing, ProductDto patch){
+        if(existing == null || patch == null){
+            return existing;
+        }
+
+        if(patch.getName() != null)
+            existing.setName(patch.getName());
+
+        if(patch.getDescription() != null)
+            existing.setDescription(patch.getDescription());
+
+        if(patch.getPrice() != null)
+            existing.setPrice(patch.getPrice());
+
+        if(patch.getImageUrl() != null)
+            existing.setImageUrl(patch.getImageUrl());
+
+        return existing;
+    }
+
     public Product toEntity(ProductDto productDto){
         Product product = new Product();
         // product.setId(productDto.getId());

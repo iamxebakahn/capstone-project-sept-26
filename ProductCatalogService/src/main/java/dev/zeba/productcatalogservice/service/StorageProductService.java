@@ -102,19 +102,10 @@ public class StorageProductService implements  IProductService{
         if(existing == null)
             return null;
 
-        if(productDto.getName()!= null)
-            existing.setName(productDto.getName());
+        productMapper.applyPatch(existing, productDto);
 
-        if(productDto.getDescription()!=null)
-            existing.setDescription(productDto.getDescription());
-
-        if(productDto.getPrice()!=null)
-            existing.setPrice(productDto.getPrice());
-
-        if(productDto.getImageUrl()!=null)
-            existing.setImageUrl(productDto.getImageUrl());
-
-        if(productDto.getCategoryDto()!=null){
+        //categoryDto without a name is ignored, we never persist a null-named category
+        if(productDto.getCategoryDto()!=null && productDto.getCategoryDto().getName()!=null){
             Category category = new Category();
             category.setName(productDto.getCategoryDto().getName());
             category.setDescription(productDto.getCategoryDto().getDescription());
@@ -126,13 +117,17 @@ public class StorageProductService implements  IProductService{
     }
 
     private Category findOrCreateCategory(Category category){
-        if(category == null){
+        if(category == null || category.getName() == null){
             return null;
         }
 
         Optional<Category> existing = categoryRepository.findByName(category.getName()); //Custom JPA method: findBy[Attribute Name] ; findByGenderAndAgeGreaterThan
         if(existing.isPresent()) {
-            return existing.get();
+            Category found = existing.get();
+            //reuse the stored row, only overwrite description when the caller actually sent one
+            if(category.getDescription() != null)
+                found.setDescription(category.getDescription());
+            return found;
         }
 
         Date now = new Date();
