@@ -182,5 +182,78 @@ Rules/Good practices to write around Agents.md:
 -short (file/rules to be small sized)- iterative process(keep improving it) - (opencode /init creates 1st version of AGENTS.md)
 in case of lot of test cases/skills : create subagents
 
+//Frontend make it!!!  Signup, Login, Search : Railway.com /Vercel/ netlify
+tools: shell/edit/read
+opencode.json (claude.json (its a configuration file)): specify specific rules for permission n all (allow rules)
+prompt injection used by ppl to bypass rules to abuse system, doesnt understand intent : agent writes 1st version, we work on it
+/init for building agents file not json file
+-> run the tests: db related tests were failing coz i didnt set up context, model shold have pre context that my team doensot want db related tests to run
+precontext/team habits to agent -> written in agents.md (loaded before every chat session)
+agents.md - should be small else it will hallucinate -> after certain time it will ignore if it is large
+
+plan mode -> patch api -> first problem -> it was overengineering and mockito bean -> reiterate plan -> build mode -> build feauter -> TDD ask it to write 4-5 tests and then write code according to those tests (can hallucinate here too) -> get a 2nd review/create agentic reviewer
+
+Skills & Subagents:
+ask agent to review code in ssame session? no ! it will justify what its done! get the review in new chat session give it context and location and ask it to review (painful)
+better way - make a subagent: analogy -> threads in a process, agents can spin up subagents and the benefit -> context of subagent is empty
+make a subagent with name of reviewer, security reviewer (security parts)
+to put subagents and skills: create .opencode folder -> subfolders agents, skills (/subagents or /skills for first version from agent)
+Agents.md : precontext loaded with every chat session: disadvantage! even for smaller contxt, everything is loaded : for every segment pre context could be different -> define skill for a perticuklar type of task: agent only loads skill when it is needed not in all chats
+precontext invoked on demand : skills
+we can have scripts, templates, assets inside skill.
+can create as many skills as possible, wont hallucinate agent
+integrate via commands the agents in your workflow!
+Build a Readme of your project, ask agent to act as interviewer, suggest features which can be built on top of it (PM)
+how to invoke agent as a command:
+Smoke Test?? sort of pre prod testing, if all APIs are working or not - test live path (path customers will go through)
+no matter what code change happens, my basic features 6-7 APIs should keep on working, on every commit and push  trigger github workflows in which i can run a command to run a smoke test- to ensure no commit is disturbing main path
+opencode run calls agent as command, because i have screen right now, i am running open code, but in CI/CD pipelines without screen we use command to invoke agents
+pipeline is sequence of shell commands we exectue, in that last would be commands to run agent with so n so prompt
+requests.md : smoketest file
+previously python scripts to invoke end points with credentials and tokens; write agent command in workflow run requests.md as smoke test -> give command to generate token -> agent generates token and check end points whether smoke is passing or not
+
+MCPs: make our own. + integrate others as well
+(Top 3 challenges for new engineers- K.T, Documentation, Lot of knowledge undocumented, Our own systems - ticket where issue is-> logs -> painful (trace id, when the issue was, bug, search logs of that itme line, multiple systems travelling multiple logs hence, downstream service -navigation issue / time consuming)
+Solve these above issues with MCPs
+ask agent to design doc on confluence/notion ! cannot do it by default, ask it to read JIRA ticket -> by default no it cant read, ask it to go to diff dashboard and check logs -> no!
+basic skills - read, edit, shell - cant open external systems, cant navigate, cant create JIRA ticket, cant open logs, cant write docs on my behalf on notion/confluence
+design to feature ready: figma
+MCP : problem solves -> access to external systems and work on my behalf (normally can't work unless integrated)
+integrate apple calendar with google calendar -> integration possible ->
+
+Opencode, codex, claude code, rover, agent -> JIRA, Confluence/Notion, Splunk (to read logs), storage/DB, talk to external service too (20 capabilities need to be built)
+since there's agent capability to be integrated hence we are able to integrate it, similary RHS tools also need to have some capability to be integrated
+N*M problem: m is huge (1000s of app to connect agent to) to avoid this, define common standard between them / interface analogy: anthropic defined MCP: open standard (25/11/24)
+12/25 - moved to agentic foundation(under Linux foundation) [like http MCP is also an open standard]
+all external systems if they want AI agents to operate on them, they have to expose MCP server. MCP server is agent agnostic
+now N*M becomes N+M, architecturally adapter pattern
+model never directly talks to MCP server
+
+Architecture of how E-2-E MCP works
+catelog service -> MySQL DB -> as of today opencode cannot fire queries on db
+if i want certain capability to my agent i will have to write MCP server for catalog; agent/model doesnt talk to MCP server, harness talks to MCP
+calling order
+
+Client       Host+MCP Client                                         MCP Server                                                         Server API
+Model->     Opencode ->                                       MCP server ->                                                           cataloge ->     DB
+        (edit,read,shell)             (defines all capabilities AI agents to have: getProducts() from DB, deleteProducts)
+         asks MCP server
+     what all capabilities it can offer
+    stores all those capabilities along with default capabilities
+    register tools exposed in MCP Server
+
+
+layman: MCP is Rest API server, server which can be called by AI agent, since AI is involved and making calls and not human making calls hence MCP and not http
+local servers: communicate via stdio
+remote servers: JSON - RPC 2.0 (v.specific GRPC)
+ */
+
+/*
+business , environmental
+maths, financial
++
+FMVA (12k, Fin Analyst, 2 lev, 100, Accounts/Maths-    )- CFI, CA, CFA, ACCA
+
+MBA
 
  */
