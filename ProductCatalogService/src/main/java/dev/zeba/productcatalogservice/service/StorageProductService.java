@@ -90,7 +90,10 @@ public class StorageProductService implements  IProductService{
         existing.setDescription(incoming.getDescription());
         existing.setPrice(incoming.getPrice());
         existing.setImageUrl(incoming.getImageUrl());
-        existing.setCategory(findOrCreateCategory(incoming.getCategory()));
+        //an absent (or nameless) category means "leave the current category alone"
+        Category category = findOrCreateCategory(incoming.getCategory());
+        if(category != null)
+            existing.setCategory(category);
         existing.setLastUpdatedAt(new Date());
 
         return productRepository.save(existing);
@@ -132,6 +135,7 @@ public class StorageProductService implements  IProductService{
 
         Date now = new Date();
         category.setId(null);
+        category.setState(State.ACTIVE);
         category.setCreatedAt(now);
         category.setLastUpdatedAt(now);
         return category;
