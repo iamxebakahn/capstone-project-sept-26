@@ -1,0 +1,1 @@
+Added file to study how to integrate agents in CI/CD pipelines when there would be no interface; i.e. with the help of commands
