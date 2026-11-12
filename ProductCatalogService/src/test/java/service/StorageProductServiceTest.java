@@ -12,6 +12,7 @@ import dev.zeba.productcatalogservice.service.StorageProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -92,6 +93,7 @@ public class StorageProductServiceTest {
 
         /*Assert: 404 for INACTIVE, and no state-blind lookup slipped in*/
         assertNull(result);
+        verify(productRepository).findByIdAndState(1L, State.ACTIVE);
         verify(productRepository, never()).findById(any());
         verify(productRepository, never()).save(any(Product.class));
     }
@@ -125,10 +127,15 @@ public class StorageProductServiceTest {
 
     @Test
     public void whenCategoryExistsByName_thenItsDescriptionIsUpdated() {
-        /*Arrange*/
+        /*Arrange: the product currently sits in a different category, so the patch must switch it*/
+        Category electronics = new Category();
+        electronics.setId(9L);
+        electronics.setName("electronics");
+        electronics.setDescription("gadgets");
+
         Category beauty = existingCategory();
         Product existing = existingProduct();
-        existing.setCategory(beauty);
+        existing.setCategory(electronics);
 
         ProductDto patch = new ProductDto();
         CategoryDto categoryDto = new CategoryDto();
@@ -144,10 +151,95 @@ public class StorageProductServiceTest {
         Product result = storageProductService.patchProduct(1L, patch);
 
         /*Assert: same stored row reused, only its description changed*/
+        ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(saved.capture());
+
         assertSame(beauty, result.getCategory());
-        assertEquals(7L, result.getCategory().getId());
-        assertEquals("beauty", result.getCategory().getName());
-        assertEquals("new description", result.getCategory().getDescription());
+        assertSame(beauty, saved.getValue().getCategory());
+        assertEquals(7L, saved.getValue().getCategory().getId());
+        assertEquals("beauty", saved.getValue().getCategory().getName());
+        assertEquals("new description", saved.getValue().getCategory().getDescription());
         verify(categoryRepository, never()).save(any(Category.class));
+    }
+
+    @Test
+    public void whenCategoryExistsAndNoDescriptionSent_thenDescriptionUnchanged() {
+        /*Arrange: patch names an existing category but sends no description*/
+        Category beauty = existingCategory();
+        Product existing = existingProduct();
+        existing.setCategory(beauty);
+
+        ProductDto patch = new ProductDto();
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setName("beauty");
+        patch.setCategoryDto(categoryDto);
+
+        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(categoryRepository.findByName("beauty")).thenReturn(Optional.of(beauty));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        /*Act*/
+        storageProductService.patchProduct(1L, patch);
+
+        /*Assert: the stored description survives an update that did not mention it*/
+        ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(saved.capture());
+        assertSame(beauty, saved.getValue().getCategory());
+        assertEquals("makeup", saved.getValue().getCategory().getDescription());
+    }
+
+    @Test
+    public void whenNewCategoryName_thenCategoryCreatedWithActiveState() {
+        /*Arrange: the named category does not exist yet*/
+        Product existing = existingProduct();
+        existing.setCategory(existingCategory());
+
+        ProductDto patch = new ProductDto();
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setName("toys");
+        categoryDto.setDescription("fun");
+        patch.setCategoryDto(categoryDto);
+
+        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(categoryRepository.findByName("toys")).thenReturn(Optional.empty());
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        /*Act*/
+        storageProductService.patchProduct(1L, patch);
+
+        /*Assert: a brand new category is saved as an ACTIVE row, never with a null state*/
+        ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(saved.capture());
+        Category created = saved.getValue().getCategory();
+        assertNotNull(created);
+        assertEquals("toys", created.getName());
+        assertNull(created.getId());
+        assertEquals(State.ACTIVE, created.getState());
+    }
+
+    @Test
+    public void whenReplaceHasNoCategory_thenExistingCategoryIsKept() {
+        /*Arrange: a PUT without categoryDto must not wipe the product's category*/
+        Category beauty = existingCategory();
+        Product existing = existingProduct();
+        existing.setCategory(beauty);
+
+        ProductDto replacement = new ProductDto();
+        replacement.setName("Mascara XL");
+        replacement.setDescription("Extra volume");
+        replacement.setPrice(new BigDecimal("12.99"));
+        replacement.setImageUrl("https://cdn.shopnest/mascara-xl.png");
+
+        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        /*Act*/
+        Product result = storageProductService.replaceProduct(1L, replacement);
+
+        /*Assert*/
+        ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(saved.capture());
+        assertSame(beauty, saved.getValue().getCategory());
+        assertEquals("beauty", saved.getValue().getCategory().getName());
     }
 }
