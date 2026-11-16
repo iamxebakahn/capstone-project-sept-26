@@ -246,14 +246,32 @@ Model->     Opencode ->                                       MCP server ->     
 layman: MCP is Rest API server, server which can be called by AI agent, since AI is involved and making calls and not human making calls hence MCP and not http
 local servers: communicate via stdio
 remote servers: JSON - RPC 2.0 (v.specific GRPC)
- */
 
-/*
-business , environmental
-maths, financial
-+
-FMVA (12k, Fin Analyst, 2 lev, 100, Accounts/Maths-    )- CFI, CA, CFA, ACCA
+Steps:
+//finding right doc is challenge
+1. Connect 1st public doc MCP server (1st integration) (Context 7) (MCPs are added to opencode.json file) (verify info given by it, write small code and check if it works)
+2. connect to notiion mcp (Central MCP registry analogus to maven registry) (If opencode.json is not created by me, there's inbuilt file, in case of both- it merges) (can raise PR too on github)
+3. Create our own MCP to expose our tools (eg one tool in org needs to be exposed to other tool)(ML pricing team wants to access product pricing)
+Opencode -> Catalog MCP
+         <-list of tools
 
-MBA
+tool must define 3 things:
+name, description, parameters (get_products, returns info of product with given id, id:int) (shade: bundls plugins into executable jar / converts code into executebale jar) (SB has shade by default but since catqlog-mcp is not SB hence shade is to be added in pom.xml)
+catalog-mcp local server (auth server connects to it) authservice has opencode running in it -> catalog mcp (stdio to communicate with local server)
+model calls getPrpduct() to catalog server - behind scene what API calls getProducts make? /products/{id} (communicate via http)
 
+autservice has opencode -> commmunicates via JSON - RPC to notion -> notion sever -> API calls via http
+
+steps for our local MCP:
+catalog-mcp > pom.xml with dependencies > new directory (src/main/java) > add package com.scaler.catalogmcp in it > CatalogMcpServer class in it > generate jar > when agent makes 1st commuication to MCP it has to do something (before calling any tool) MCP handshake happens (json input)> acknowledge from json that handshake has happened > post handshake agent should get list of tools (call list of tools) > local testing > integrate MCP into external service (for external service - it was URL, for local it is path of JAR) (global = catalog mcp is added to opencode's global config and can be accessed anywhere in any service - can have access to catalog service)>
+tool always has to make API call to get info? Not necessarily (eg. ReadMe file would not need API call)
+.original is not fat jar
+Tool poisining : deliberately write malicious statements to expose secrets and other bad stuff
+Solved By:
+1. pin version of tool - AI agents will ask if I want to go ahead with new version of tool, i'll review it
+2. LEthal Trifecta -  private data, text an attaker can write, read description properly (dont send data out)
+
+
+If agents want to connect to external system, is writing an MCP server the only way or there are other ways?
+there can be a static doc/ local queries to avoid exposing their MCPs or to avoid security concerns
  */

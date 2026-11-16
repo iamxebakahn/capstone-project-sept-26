@@ -1,7 +1,11 @@
 package dev.zeba.productcatalogservice.service;
 
+import dev.zeba.productcatalogservice.dto.CategorySummaryDto;
+import dev.zeba.productcatalogservice.model.enums.State;
 import dev.zeba.productcatalogservice.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CategoryService implements ICategoryService{
@@ -14,6 +18,11 @@ public class CategoryService implements ICategoryService{
     @Override
     public Double getAvgPriceForCategory(String category) {
         return categoryRepository.findAvgPriceForCategory(category);
+    }
+
+    @Override
+    public List<CategorySummaryDto> getCategorySummaries() {
+        return categoryRepository.findCategorySummaries(State.ACTIVE);
     }
 }
 

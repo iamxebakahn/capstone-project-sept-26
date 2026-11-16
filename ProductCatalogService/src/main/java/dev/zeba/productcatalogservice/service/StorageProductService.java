@@ -28,7 +28,7 @@ public class StorageProductService implements  IProductService{
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
-
+    private static final BigDecimal NO_MAX_PRICE = new BigDecimal("9999999999999999.999");
 /*
     public StorageProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper) {
         this.productRepository = productRepository;
@@ -164,7 +164,9 @@ public class StorageProductService implements  IProductService{
 
     @Override
     public Page<Product> getProductsInPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-        return productRepository.findByPriceBetweenAndState(minPrice,maxPrice,State.ACTIVE,pageable);
+        BigDecimal min = minPrice == null ? BigDecimal.ZERO : minPrice;
+        BigDecimal max = maxPrice == null ? NO_MAX_PRICE : maxPrice;
+        return productRepository.findByPriceBetweenAndState(min, max, State.ACTIVE, pageable);
     }
 
     //PUT /UPDATE

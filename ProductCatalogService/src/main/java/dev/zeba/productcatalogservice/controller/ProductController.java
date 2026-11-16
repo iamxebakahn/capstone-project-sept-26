@@ -1,5 +1,8 @@
 package dev.zeba.productcatalogservice.controller;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.server.ResponseStatusException;
 import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.dto.ProductPitchDto;
 import dev.zeba.productcatalogservice.mappers.ProductMapper;
@@ -145,8 +148,13 @@ public class ProductController {
     //Pageable object allows clients to send page related info: sorting param, size param, page number param
     //PagedModel: contains metadata about pages which client can use to ask for next page, to decide what next action client needs
     //to do (information like how many pages are there, total entries in a page, current page number, next page number client can ask)
-    public PagedModel<ProductDto> getProductsInPriceRange(@RequestParam(required = false)BigDecimal minPrice, @RequestParam(required = false)BigDecimal maxPrice,
-                                              Pageable pageable){
+    public PagedModel<ProductDto> getProductsInPriceRange(@RequestParam(required = false)BigDecimal minPrice,
+                                                          @RequestParam(required = false)BigDecimal maxPrice,
+                                                          @PageableDefault(size = 20, sort = "price", direction = Sort.Direction.ASC) Pageable pageable){
+        if ((minPrice != null && minPrice.signum() < 0) || (maxPrice != null && maxPrice.signum() < 0))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Prices cannot be negative");
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "minPrice cannot be greater than maxPrice");
         Page<ProductDto> productDtos = storageService.getProductsInPriceRange(minPrice,maxPrice,pageable).map(product -> productMapper.toDto(product));
         return new PagedModel<>(productDtos);
         //page number, page size, sort on which attribute : can be passed via pagedmodel
