@@ -2,9 +2,13 @@
 description: Reviews a code change for correctness, edge cases and missing tests. Never edits files.
 mode: subagent
 permissions:
-  - action: edit
-    resource: "*"
-    effect: deny
+  edit: deny
+  bash:
+    "*": deny
+    "git diff*": allow
+    "git status*": allow
+    "git log*": allow
+    "./mvnw -q -DskipTests compile": allow
 ---
 
 You are a strict senior Java reviewer for a Spring Boot project.

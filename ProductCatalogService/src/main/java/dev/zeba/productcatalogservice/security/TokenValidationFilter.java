@@ -1,17 +1,21 @@
 package dev.zeba.productcatalogservice.security;
 
+import dev.zeba.productcatalogservice.clients.AuthClient;
 import dev.zeba.productcatalogservice.dto.AuthUserDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.restclient.RestTemplateBuilder;
+// OLD (RestTemplate era, removed 2026-11-17):
+//import org.springframework.beans.factory.annotation.Value;
+// OLD (RestTemplate era, removed 2026-11-17):
+//import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+// OLD (RestTemplate era, removed 2026-11-17):
+//import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -19,13 +23,23 @@ import java.io.IOException;
 @Component
 public class TokenValidationFilter extends OncePerRequestFilter {
 
-    private final String authServiceUrl; //to read authUrl
-    private final RestTemplate restTemplate; //for rest template object
+    // OLD (RestTemplate era, removed 2026-11-17):
+    //private final String authServiceUrl; //to read authUrl
+    // OLD (RestTemplate era, removed 2026-11-17):
+    //private final RestTemplate restTemplate; //for rest template object
+    private final AuthClient authClient; //for rest template object
 
-    public TokenValidationFilter(@Value("${auth.service.url}")String authServiceUrl,
-                                 RestTemplateBuilder restTemplateBuilder) {
-        this.authServiceUrl = authServiceUrl;
-        this.restTemplate = restTemplateBuilder.build();
+    // OLD (RestTemplate era, removed 2026-11-17):
+    //public TokenValidationFilter(@Value("${auth.service.url}")String authServiceUrl,
+    //                             RestTemplateBuilder restTemplateBuilder) {
+    // OLD (RestTemplate era, removed 2026-11-17):
+    //    this.restTemplate = restTemplateBuilder.build();
+    // OLD (RestTemplate era, removed 2026-11-17):
+    // OLD: public TokenValidationFilter(@Value("${auth.service.url}")String authServiceUrl, AuthClient authClient) {
+    public TokenValidationFilter(AuthClient authClient) {
+        // OLD (RestTemplate era, removed 2026-11-17):
+        // this.authServiceUrl = authServiceUrl;
+        this.authClient = authClient;
     }
 
     @Override
@@ -49,8 +63,9 @@ public class TokenValidationFilter extends OncePerRequestFilter {
             return;
         }
 
-        AuthUserDto authUserDto;
+       // AuthUserDto authUserDto;
         //if valid header call authservice
+        /*
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", header);
@@ -65,6 +80,20 @@ public class TokenValidationFilter extends OncePerRequestFilter {
             response.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value()); //service not working/service is down
             return;
         }
+         */
+
+        AuthUserDto authUserDto;
+        try {
+            authUserDto = authClient.validateToken(header);
+        } //catch (HttpClientErrorException.Unauthorized e) {
+            catch (HttpClientErrorException e) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return;
+        } catch (RestClientException e) {
+            response.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+            return;
+        }
+
 
         //response/req (by default empty) client sends -> call to authservice -> answer returned by authservice -> based on answer status in response is to be set
         //2 ways to interact with microservice: syn: rest template/fienclient direct call w/o response
@@ -275,3 +304,40 @@ Solved By:
 If agents want to connect to external system, is writing an MCP server the only way or there are other ways?
 there can be a static doc/ local queries to avoid exposing their MCPs or to avoid security concerns
  */
+
+/*
+
+3 types of problems when external services are involved in system:
+1. slow to respond (Tomcat has 200 threads) (eg 20 sec for 1 auth call: 1. we set a timeout (limits damage not control it)) (how to decide on timeout value: SLA (P0 - ms, P1 - >ms) (per SLA decide timeout) (overhead (for buffer) + SLA -> timeout)(connection timeout:time for tomcat to pick my request or http connection to get established  , response timeout: post connection, tomcat has picked req- how much time to wait for response : actual API response) (Friend.java : friend = external service)
+zebakhan@Zebas-MacBook-Pro src % java Friend.java
+Friend is listening on http://localhost:9000 : Making call to this 9000 friend and not actual auth service, coz it can’t simulate failure
+set env variables in configuration here in product service: GROQ_URL=http://localhost:9000/groq; SERVER_TOMCAT_THREADS_MAX=10; AUTH_SERVICE_URL=http://localhost:9000
+friend.java : mock server calling both auth and groq endpoints, to simulate failures, gave 000 when delay was set to 20 seconds and delete was ran for 10 times
+solution: app properties: connect-timeout & read-timeout
+used RestTemplate to make calls: but we need to get rid of RestTemplate, coz RestTemplate is being deprecated and not being updated, just being maintained
+Pitchservice uses resttemplate, tomorrow if new service is there like discountpitch - needs resttemplate, we dont need another resttemplate object, we just need singleton object creation - bean creation
+
+2. flaky to respond (CPU utilization of server increased hence time increased etc, infra issues) (2xx 70% of time): doesnt give 2xx 100% of time
+Server isnt reliable : 4 -9s of reliability - 99.99%
+Solution: Retries request (dont show to customer) ; happens only for idempotent operations - ops which dont have any harm if we do them again : eg. getProduct(); deleteProduct(id);put : post? : not an idempotent operation (creates duplicates) [pass idempotentcy key in header post - becomes idempotent op: to avoid duplication]
+Retry for 3-4 times n throw 5xx to client in end:, give server time to recover - dont give retyr immediately give some delay in between : exponential backoff : when external calls fail partially, dont make immediate retry always add  gaps in b/w while making next retry: exponential coz interval increase by 2^n; add random number with these increasing intervals between each retry is calles as exponential backoff with jitters (2^0 + 37 . 2^1 + 63 ...)
+we implement exponential backoff with jitter
+Possible to have client level timeouts as well, apart from global timeouts levels
+
+3. permanently dead (server is down for some time): one dead failure triggered failure accross all services! cascading failures: circuit breakers to avoid cascading failures
+circuit breaker: fuse: something goes wrong it stops flow to entire setup
+3 states: closed - happy normal, working external services  - 2xx + record failures (count 5xx) : in last 5 req, all 5 failed circuit braker feels , no. of failures have gone above certain threshold - it goes in open state
+open - stops making call to external service - return chief fallback (pitch service : Default Reposnse + wait for external service to recover ->
+goes into half open/closed state - decide on no. of calls it makes to  external service (3/4)  : call suuceeds circuit goes to closed state; all fail - moves to open state
+Live feed mein in hotstar if SSAI is enabled, ad blockers won’t work coz they are part of live stream and not on top live stream
+SSAI server gives diff ads to diff viewers ; after 2-3 cr views SSAI server is bombarded - ads will itself fail; had circuit breaker , when after certain concurrency SSAI circuit breaker open  -in main service - where default ads were shown and everybody sees same ads/default response
+Circuit Breaker - works for all http calls not for cache
+
+Timeouts are set for clients: auth/grok and in app properties
+CB - set at method level for certain API : dependency starter-actuator (for state of CB), aspectj - AOP (aspect oriented prog), resilience4j - resilience configs
+sliding-window-size - no. of req to fail before it goes into open sate
+minimum-number-of-calls = min of req to fail to open CB
+failure-rate-threshold = % of fialure after which CB should be open (eg. if 50% - unless 3/5 req dont fail CB would not open)
+wait-duration-in-open-state = how much time to be open state before new call is made
+permitted-number-of-calls-in-half-open-state = calls to be made in half open state
+* */

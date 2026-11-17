@@ -5,12 +5,11 @@ import dev.zeba.productcatalogservice.dto.DummyJsonProductListDto;
 import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
-import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
@@ -19,23 +18,22 @@ import java.util.List;
 
 @Service
 public class DummyProductService implements IProductService {
-    //For 3rd party API calls via spring: Rest Template, Rest Client, Feign Client (we use Rest Template)
+    //For 3rd party API calls via spring: Rest Template, Rest Client, Feign Client (we use Rest Client)
     //Study Feign Client
 
-    private RestTemplate restTemplate;
+    private final RestClient restClient;
 
-    //Java expects RestTemplate object to be created with the builder of RestTemplate
-    //builder is not present here though: so we add rest client
-    //To get resttamplatebuilder to create resttamplate object, maven repository has dependency code for starter restclient
-    //added dependency code in .pom (coz m using SB4 and it has separate dependency for restclient)
-    public DummyProductService(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplate = restTemplateBuilder.build();
+    public DummyProductService(RestClient.Builder restClientBuilder) {
+        this.restClient = restClientBuilder.build();
     }
 
     @Override
     public Product getProductById(Long id) {
         try {
-            ResponseEntity<DummyJsonProductDto> dummyJsonProductDto = restTemplate.getForEntity("https://dummyjson.com/products/{id}", DummyJsonProductDto.class, id);
+            ResponseEntity<DummyJsonProductDto> dummyJsonProductDto = restClient.get()
+                    .uri("https://dummyjson.com/products/{id}", id)
+                    .retrieve()
+                    .toEntity(DummyJsonProductDto.class);
             if(dummyJsonProductDto.getStatusCode().is2xxSuccessful() && dummyJsonProductDto.hasBody())
                 return from(dummyJsonProductDto.getBody());
 
@@ -68,7 +66,10 @@ public class DummyProductService implements IProductService {
 
     @Override
     public List<Product> getAllProducts() {
-        ResponseEntity<DummyJsonProductListDto> response = restTemplate.getForEntity("https://dummyjson.com/products?limit=0", DummyJsonProductListDto.class);
+        ResponseEntity<DummyJsonProductListDto> response = restClient.get()
+                .uri("https://dummyjson.com/products?limit=0")
+                .retrieve()
+                .toEntity(DummyJsonProductListDto.class);
         List<Product> products = new ArrayList<>();
         for(DummyJsonProductDto dummyJsonProductDto: response.getBody().getProducts()){
             products.add(from(dummyJsonProductDto));
