@@ -340,4 +340,29 @@ minimum-number-of-calls = min of req to fail to open CB
 failure-rate-threshold = % of fialure after which CB should be open (eg. if 50% - unless 3/5 req dont fail CB would not open)
 wait-duration-in-open-state = how much time to be open state before new call is made
 permitted-number-of-calls-in-half-open-state = calls to be made in half open state
+
+UUID
+Geenerating PK via identity 1,2,3... : if id is int - problem: limited memory : overflow : long still problem : API /products/1 -> easy to get info of products: for competitors
+hence UUID - alphanumeric no. : size 128 bits; 16 bytes; 32 chars : 8-4-4-4-12 (3rd section begins with no. which is version no.)
+jshell, we use version 7:  UUID, sequential data : time + random nos.
+insertion in db happens via indexing - > indexing based on sequence
+db divided into chunks/pages -> chunk/page has some portion filled/empty -> data added in random chunk/page -> takes time to update data (in case of random nos.)
+UUID is not stored as characters (32 bytes) in db but is stored as raw bites (seq of hexadecimal nos.): inbuilt func bit_to_uuid(id) to convert to uuid ; uuid_to_bit to write uuid in db
+change PK of both tables to UUID
+-changes in base model -apis work on long, pass UUID it will throw error: change in every API where you are consuming it
+
+
+DB Migrations:
+
+intyitially : DDL auto to update (hibernate creates initial schema, hibernate created id column with num/long): if i run app, hibernate cant change long to uuid (can add, not delete, can't map in data can only add in schema in update)
+problems: hibernate can't change (delete) schema  (hibernate: cant do everything )
+db changes are not tracked
+someone changes in workbench not in code, alters table : we cant figure out
+schema changes are rare event
+api contract changed : intimate conusmers about it (change logs)/ change in signature of APIs
+migration scripts/libraries (since db doesnt have logs): flyway and liquibase   : helps with schema chanegs without involving hibernate, tracks changes too (like a git for db)
+starter-flyway & flyway-mysql (code of flyway and connector of flyway)
+db is most brittle component of backend system
+any migration make sure local backup of db is taken in form of mysql script : command is
+
 * */

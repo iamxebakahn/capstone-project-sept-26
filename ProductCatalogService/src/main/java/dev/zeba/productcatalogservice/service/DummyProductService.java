@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DummyProductService implements IProductService {
@@ -28,9 +29,12 @@ public class DummyProductService implements IProductService {
     }
 
     @Override
-    public Product getProductById(Long id) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public Product getProductById(Long id) {
+    public Product getProductById(UUID id) {
         try {
             ResponseEntity<DummyJsonProductDto> dummyJsonProductDto = restClient.get()
+                    // TODO(UUID): supplier id is Long
                     .uri("https://dummyjson.com/products/{id}", id)
                     .retrieve()
                     .toEntity(DummyJsonProductDto.class);
@@ -50,17 +54,23 @@ public class DummyProductService implements IProductService {
     }
 
     @Override
-    public boolean deleteProdcutById(Long id) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public boolean deleteProdcutById(Long id) {
+    public boolean deleteProdcutById(UUID id) {
         return false;
     }
 
     @Override
-    public Product replaceProduct(Long id, ProductDto productDto) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public Product replaceProduct(Long id, ProductDto productDto) {
+    public Product replaceProduct(UUID id, ProductDto productDto) {
         return null;
     }
 
     @Override
-    public Product patchProduct(Long id, ProductDto productDto) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public Product patchProduct(Long id, ProductDto productDto) {
+    public Product patchProduct(UUID id, ProductDto productDto) {
         return null;
     }
 
@@ -85,7 +95,8 @@ public class DummyProductService implements IProductService {
 
     private Product from(DummyJsonProductDto dummyJsonProductDto){
         Product product = new Product();
-        product.setId(dummyJsonProductDto.getId());
+        // TODO(UUID): supplier id is Long
+        //product.setId(dummyJsonProductDto.getId());
         product.setName(dummyJsonProductDto.getTitle());
         product.setDescription(dummyJsonProductDto.getDescription());
         product.setPrice(dummyJsonProductDto.getPrice());

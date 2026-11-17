@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Primary
@@ -37,7 +38,9 @@ public class StorageProductService implements  IProductService{
     }
 */
     @Override
-    public Product getProductById(Long id) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public Product getProductById(Long id) {
+    public Product getProductById(UUID id) {
 //        Optional<Product> productOptional = productRepository.findById(id);
 //        //findById : returns obj based on P.K. : returns Optional
 //        //findAll(): select *
@@ -69,7 +72,9 @@ public class StorageProductService implements  IProductService{
     }
 
     @Override
-    public boolean deleteProdcutById(Long id) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public boolean deleteProdcutById(Long id) {
+    public boolean deleteProdcutById(UUID id) {
         Product product = productRepository.findById(id).orElse(null);
         if(product == null)
             return false;
@@ -80,7 +85,9 @@ public class StorageProductService implements  IProductService{
     }
 
     @Override
-    public Product replaceProduct(Long id, ProductDto productDto) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public Product replaceProduct(Long id, ProductDto productDto) {
+    public Product replaceProduct(UUID id, ProductDto productDto) {
         Product existing = productRepository.findByIdAndState(id,State.ACTIVE).orElse(null);
         if(existing == null)
             return null;
@@ -100,7 +107,9 @@ public class StorageProductService implements  IProductService{
     }
 
     @Override
-    public Product patchProduct(Long id, ProductDto productDto) {
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public Product patchProduct(Long id, ProductDto productDto) {
+    public Product patchProduct(UUID id, ProductDto productDto) {
         Product existing = productRepository.findByIdAndState(id,State.ACTIVE).orElse(null);
         if(existing == null)
             return null;

@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +33,10 @@ import static org.mockito.Mockito.when;
 //repositories are mocked, so no database is needed: the PATCH flow never leaves this class
 @ExtendWith(MockitoExtension.class)
 public class StorageProductServiceTest {
+
+    private static final UUID ID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID ID_7 = UUID.fromString("00000000-0000-0000-0000-000000000007");
+    private static final UUID ID_9 = UUID.fromString("00000000-0000-0000-0000-000000000009");
 
     @Mock
     private ProductRepository productRepository;
@@ -48,7 +53,9 @@ public class StorageProductServiceTest {
 
     private Product existingProduct() {
         Product existing = new Product();
-        existing.setId(1L);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //existing.setId(1L);
+        existing.setId(ID_1);
         existing.setName("Mascara");
         existing.setDescription("Volumising mascara");
         existing.setPrice(new BigDecimal("9.99"));
@@ -60,7 +67,9 @@ public class StorageProductServiceTest {
 
     private Category existingCategory() {
         Category category = new Category();
-        category.setId(7L);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //category.setId(7L);
+        category.setId(ID_7);
         category.setName("beauty");
         category.setDescription("makeup");
         return category;
@@ -69,12 +78,16 @@ public class StorageProductServiceTest {
     @Test
     public void whenProductMissing_thenReturnsNull() {
         /*Arrange: findByIdAndState returns empty for an unknown id*/
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.empty());
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.empty());
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.empty());
         ProductDto patch = new ProductDto();
         patch.setName("Lipstick");
 
         /*Act*/
-        Product result = storageProductService.patchProduct(1L, patch);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //Product result = storageProductService.patchProduct(1L, patch);
+        Product result = storageProductService.patchProduct(ID_1, patch);
 
         /*Assert: controller turns this null into 404 and nothing is written*/
         assertNull(result);
@@ -84,16 +97,22 @@ public class StorageProductServiceTest {
     @Test
     public void whenProductIsInactive_thenReturnsNull() {
         /*Arrange: an INACTIVE row is excluded by the State.ACTIVE filter of the lookup*/
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.empty());
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.empty());
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.empty());
         ProductDto patch = new ProductDto();
         patch.setName("Lipstick");
 
         /*Act*/
-        Product result = storageProductService.patchProduct(1L, patch);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //Product result = storageProductService.patchProduct(1L, patch);
+        Product result = storageProductService.patchProduct(ID_1, patch);
 
         /*Assert: 404 for INACTIVE, and no state-blind lookup slipped in*/
         assertNull(result);
-        verify(productRepository).findByIdAndState(1L, State.ACTIVE);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //verify(productRepository).findByIdAndState(1L, State.ACTIVE);
+        verify(productRepository).findByIdAndState(ID_1, State.ACTIVE);
         verify(productRepository, never()).findById(any());
         verify(productRepository, never()).save(any(Product.class));
     }
@@ -110,11 +129,15 @@ public class StorageProductServiceTest {
         categoryDto.setDescription("description without a name"); //no name, must not create a null-named category
         patch.setCategoryDto(categoryDto);
 
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.of(existing));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         /*Act*/
-        Product result = storageProductService.patchProduct(1L, patch);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //Product result = storageProductService.patchProduct(1L, patch);
+        Product result = storageProductService.patchProduct(ID_1, patch);
 
         /*Assert: product's category is untouched and the category lookup was never reached*/
         assertNotNull(result);
@@ -129,7 +152,9 @@ public class StorageProductServiceTest {
     public void whenCategoryExistsByName_thenItsDescriptionIsUpdated() {
         /*Arrange: the product currently sits in a different category, so the patch must switch it*/
         Category electronics = new Category();
-        electronics.setId(9L);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //electronics.setId(9L);
+        electronics.setId(ID_9);
         electronics.setName("electronics");
         electronics.setDescription("gadgets");
 
@@ -143,12 +168,16 @@ public class StorageProductServiceTest {
         categoryDto.setDescription("new description");
         patch.setCategoryDto(categoryDto);
 
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.of(existing));
         when(categoryRepository.findByName("beauty")).thenReturn(Optional.of(beauty));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         /*Act*/
-        Product result = storageProductService.patchProduct(1L, patch);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //Product result = storageProductService.patchProduct(1L, patch);
+        Product result = storageProductService.patchProduct(ID_1, patch);
 
         /*Assert: same stored row reused, only its description changed*/
         ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
@@ -156,7 +185,9 @@ public class StorageProductServiceTest {
 
         assertSame(beauty, result.getCategory());
         assertSame(beauty, saved.getValue().getCategory());
-        assertEquals(7L, saved.getValue().getCategory().getId());
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //assertEquals(7L, saved.getValue().getCategory().getId());
+        assertEquals(ID_7, saved.getValue().getCategory().getId());
         assertEquals("beauty", saved.getValue().getCategory().getName());
         assertEquals("new description", saved.getValue().getCategory().getDescription());
         verify(categoryRepository, never()).save(any(Category.class));
@@ -174,12 +205,16 @@ public class StorageProductServiceTest {
         categoryDto.setName("beauty");
         patch.setCategoryDto(categoryDto);
 
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.of(existing));
         when(categoryRepository.findByName("beauty")).thenReturn(Optional.of(beauty));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         /*Act*/
-        storageProductService.patchProduct(1L, patch);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //storageProductService.patchProduct(1L, patch);
+        storageProductService.patchProduct(ID_1, patch);
 
         /*Assert: the stored description survives an update that did not mention it*/
         ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
@@ -200,12 +235,16 @@ public class StorageProductServiceTest {
         categoryDto.setDescription("fun");
         patch.setCategoryDto(categoryDto);
 
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.of(existing));
         when(categoryRepository.findByName("toys")).thenReturn(Optional.empty());
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         /*Act*/
-        storageProductService.patchProduct(1L, patch);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //storageProductService.patchProduct(1L, patch);
+        storageProductService.patchProduct(ID_1, patch);
 
         /*Assert: a brand new category is saved as an ACTIVE row, never with a null state*/
         ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);
@@ -230,11 +269,15 @@ public class StorageProductServiceTest {
         replacement.setPrice(new BigDecimal("12.99"));
         replacement.setImageUrl("https://cdn.shopnest/mascara-xl.png");
 
-        when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //when(productRepository.findByIdAndState(1L, State.ACTIVE)).thenReturn(Optional.of(existing));
+        when(productRepository.findByIdAndState(ID_1, State.ACTIVE)).thenReturn(Optional.of(existing));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         /*Act*/
-        Product result = storageProductService.replaceProduct(1L, replacement);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //Product result = storageProductService.replaceProduct(1L, replacement);
+        Product result = storageProductService.replaceProduct(ID_1, replacement);
 
         /*Assert*/
         ArgumentCaptor<Product> saved = ArgumentCaptor.forClass(Product.class);

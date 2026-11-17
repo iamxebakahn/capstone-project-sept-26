@@ -6,11 +6,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class ProductDto {
-    private Long id;
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //private Long id;
+    private UUID id;
     private String name;
     private BigDecimal price;
     private String description;

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -31,7 +32,9 @@ public class ProductMapperTest {
         Category category = new Category();
         category.setName("beauty");
         //Product product = new Product();
-        product.setId(1L);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //product.setId(1L);
+        product.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         product.setName("Mascara");
         product.setPrice(new BigDecimal("9.99"));
         product.setCategory(category);
@@ -40,7 +43,9 @@ public class ProductMapperTest {
         ProductDto productDto = productMapper.toDto(product);
 
         //Assert: Checking on converting to Dto, values are not corrupted
-        assertEquals(productDto.getId(), 1L);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //assertEquals(productDto.getId(), 1L);
+        assertEquals(productDto.getId(), UUID.fromString("00000000-0000-0000-0000-000000000001"));
         assertEquals(productDto.getName(), "Mascara");
         assertEquals(productDto.getPrice(), new BigDecimal("9.99"));
         assertEquals(productDto.getCategoryDto().getName(), "beauty");
@@ -62,7 +67,9 @@ public class ProductMapperTest {
 
     private Product existingProduct() {
         Product existing = new Product();
-        existing.setId(1L);
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //existing.setId(1L);
+        existing.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         existing.setName("Mascara");
         existing.setDescription("Volumising mascara");
         existing.setPrice(new BigDecimal("9.99"));
@@ -132,7 +139,9 @@ public class ProductMapperTest {
         Product existing = existingProduct();
         Date createdAt = existing.getCreatedAt();
         ProductDto patch = new ProductDto();
-        patch.setId(99L); //client-supplied id must be ignored
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //patch.setId(99L); //client-supplied id must be ignored
+        patch.setId(UUID.fromString("00000000-0000-0000-0000-000000000099")); //client-supplied id must be ignored
         patch.setName("Lipstick");
         patch.setDescription("Matte lipstick");
         patch.setPrice(new BigDecimal("12.50"));
@@ -143,7 +152,9 @@ public class ProductMapperTest {
 
         /*Assert*/
         assertSame(existing, result);
-        assertEquals(1L, result.getId());
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //assertEquals(1L, result.getId());
+        assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000001"), result.getId());
         assertSame(createdAt, result.getCreatedAt());
         assertEquals(State.ACTIVE, result.getState());
     }

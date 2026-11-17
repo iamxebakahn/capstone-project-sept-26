@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController //it has @Component inside it, why restcontroller n why not component? : coz we need Spring to do other stuff too
 //mapping handler stuff too
@@ -71,9 +72,12 @@ public class ProductController {
     //on business logic, clients dont deal with real entities: we make DTOs, hence return Product DTO n't product entity
     //Get rid of /products and use RequestMapping
     @GetMapping("/{id}")
-    ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long id){ //PathVariable maps path variable to actual java variable
-        if(id<0)
-            return new ResponseEntity<>((HttpHeaders) null,HttpStatus.BAD_REQUEST);
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long id){ //PathVariable maps path variable to actual java variable
+    ResponseEntity<ProductDto> getProductById(@PathVariable("id") UUID id){ //PathVariable maps path variable to actual java variable
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //if(id<0)
+            //return new ResponseEntity<>((HttpHeaders) null,HttpStatus.BAD_REQUEST);
 
         Product product = storageService.getProductById(id);
         //Product product = supplierService.getProductById(id);
@@ -87,9 +91,12 @@ public class ProductController {
     //ResponseEntity : for response body + status code (for web API, response body is default reponse type)
 
     @GetMapping("/{id}/pitch")
-    public ResponseEntity<ProductPitchDto> generatePitch(@PathVariable Long id){
-        if(id<0)
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public ResponseEntity<ProductPitchDto> generatePitch(@PathVariable Long id){
+    public ResponseEntity<ProductPitchDto> generatePitch(@PathVariable UUID id){
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //if(id<0)
+            //return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         Product product = storageService.getProductById(id);
         if(product == null)
@@ -108,7 +115,9 @@ public class ProductController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id){
 
             boolean isDeleted = storageService.deleteProdcutById(id);
             if(isDeleted)
@@ -117,10 +126,13 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> replaceProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto){
-        if(id<0){
-            return ResponseEntity.badRequest().build();
-        }
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public ResponseEntity<ProductDto> replaceProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto){
+    public ResponseEntity<ProductDto> replaceProduct(@PathVariable("id") UUID id, @RequestBody ProductDto productDto){
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //if(id<0){
+            //return ResponseEntity.badRequest().build();
+        //}
         Product product = storageService.replaceProduct(id,productDto);
         if(product == null){
             return ResponseEntity.notFound().build();
@@ -130,10 +142,13 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ProductDto> patchProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto){
-        if(id<0){
-            return ResponseEntity.badRequest().build();
-        }
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //public ResponseEntity<ProductDto> patchProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto){
+    public ResponseEntity<ProductDto> patchProduct(@PathVariable("id") UUID id, @RequestBody ProductDto productDto){
+        // OLD (Long id, replaced by UUID, 2026-11-17):
+        //if(id<0){
+            //return ResponseEntity.badRequest().build();
+        //}
         Product product = storageService.patchProduct(id, productDto);
         if(product == null){
             return ResponseEntity.notFound().build();

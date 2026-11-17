@@ -12,13 +12,18 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 //why interface whynot a class: coz implementation needs to be done for all methods in JPA instead hibernate has already implemented these methods,
 // so we use thede methods instead of implementing them
-public interface ProductRepository extends JpaRepository<Product,Long> {
+// OLD (Long id, replaced by UUID, 2026-11-17):
+//public interface ProductRepository extends JpaRepository<Product,Long> {
+public interface ProductRepository extends JpaRepository<Product,UUID> {
 
-    Optional<Product> findByIdAndState(Long id, State state);
+    // OLD (Long id, replaced by UUID, 2026-11-17):
+    //Optional<Product> findByIdAndState(Long id, State state);
+    Optional<Product> findByIdAndState(UUID id, State state);
 
     //2 methods of using JPA a. inbuilt: findAll(), findById() b. custom JPA function: findByName() : filter /reading/sorting/searching no computations
     //or calculations can be done like. avg, sum etc

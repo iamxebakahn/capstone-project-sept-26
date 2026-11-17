@@ -9,8 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface CategoryRepository extends JpaRepository<Category,Long> {
+// OLD (Long id, replaced by UUID, 2026-11-17):
+//public interface CategoryRepository extends JpaRepository<Category,Long> {
+public interface CategoryRepository extends JpaRepository<Category,UUID> {
     Optional<Category> findByName(String name);
 
     //if developer is writing his own query, name of function doesnot matter
