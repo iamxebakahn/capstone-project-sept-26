@@ -35,17 +35,18 @@ public class ProductController {
     //@Component for Spring IOC to create object directly/indirectly : Beans = objects created by Spring IOC, if created by us
     // they are called as Java Objects (Bean is Java object managed by Spring IOC and not programmer)
     //@Autowired to access object
-    public ProductController(IProductService storageService, PitchService pitchService, @Qualifier("dummyProductService") IProductService supplierService, IProductService productService, ProductMapper productMapper) {
+    //public ProductController(IProductService storageService, PitchService pitchService, @Qualifier("dummyProductService") IProductService supplierService, IProductService productService, ProductMapper productMapper) {
+    public ProductController(IProductService storageService, PitchService pitchService, IProductService productService, ProductMapper productMapper) {
         this.storageService = storageService;
         this.pitchService = pitchService;
-        this.supplierService = supplierService;
+       // this.supplierService = supplierService;
         this.productMapper = productMapper;
     }
 
     private final PitchService pitchService;
     //API to get all products
     //1. make normal java function
-    private final IProductService supplierService;
+    //private final IProductService supplierService;
     private final ProductMapper productMapper;
     @GetMapping //attach end point or mapping to it so that users can call it
     List<ProductDto> getAllProducts(){

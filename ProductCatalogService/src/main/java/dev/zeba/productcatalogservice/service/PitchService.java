@@ -84,7 +84,7 @@ public class PitchService {
         catch (Exception e){
             //System.out.println(e.getMessage());
             log.warn("Error in LLM call"+ e.getMessage());
-            return "New arrival:"+product.getName()+" for just $"+product.getPrice()+". Check it out!";
+            return "New arrival: "+product.getName()+" for just $"+product.getPrice()+". Check it out!";
         }
     }
 

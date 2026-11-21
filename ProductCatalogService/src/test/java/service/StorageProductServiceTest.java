@@ -31,14 +31,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 //repositories are mocked, so no database is needed: the PATCH flow never leaves this class
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class) //to write mocks need to enable this
 public class StorageProductServiceTest {
 
     private static final UUID ID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID ID_7 = UUID.fromString("00000000-0000-0000-0000-000000000007");
     private static final UUID ID_9 = UUID.fromString("00000000-0000-0000-0000-000000000009");
 
-    @Mock
+    @Mock //tells JUnit frameork to not autowire original framework, create empty obj w/o any code
     private ProductRepository productRepository;
 
     @Mock

@@ -68,7 +68,7 @@ public class StorageProductService implements  IProductService{
         product.setCreatedAt(new Date());
         product.setLastUpdatedAt(new Date());
         product.setState(State.ACTIVE);
-        return productRepository.save(product); //due to cascade child entity : category will also be saved
+        return productRepository.save(product); //due to cascade child entity : category will also be saved //it should be mocked, while testing it doesnt have real db where actual product can be saved
     }
 
     @Override

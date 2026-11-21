@@ -347,7 +347,7 @@ hence UUID - alphanumeric no. : size 128 bits; 16 bytes; 32 chars : 8-4-4-4-12 (
 jshell, we use version 7:  UUID, sequential data : time + random nos.
 insertion in db happens via indexing - > indexing based on sequence
 db divided into chunks/pages -> chunk/page has some portion filled/empty -> data added in random chunk/page -> takes time to update data (in case of random nos.)
-UUID is not stored as characters (32 bytes) in db but is stored as raw bites (seq of hexadecimal nos.): inbuilt func bit_to_uuid(id) to convert to uuid ; uuid_to_bit to write uuid in db
+UUID is not stored as characters (32 bytes : as blob) in db but is stored as raw bites (seq of hexadecimal nos.): inbuilt func bit_to_uuid(id) to convert to uuid ; uuid_to_bit to write uuid in db
 change PK of both tables to UUID
 -changes in base model -apis work on long, pass UUID it will throw error: change in every API where you are consuming it
 
@@ -363,6 +363,49 @@ api contract changed : intimate conusmers about it (change logs)/ change in sign
 migration scripts/libraries (since db doesnt have logs): flyway and liquibase   : helps with schema chanegs without involving hibernate, tracks changes too (like a git for db)
 starter-flyway & flyway-mysql (code of flyway and connector of flyway)
 db is most brittle component of backend system
-any migration make sure local backup of db is taken in form of mysql script : command is
+any migration make sure local backup of db is taken in form of mysql script : command is /usr/local/mysql/bin/mysqldump -u root -p --single-transaction --set-gtid-purged=OFF productcatalogservice > backup-before-uuid.sql
+since we're using flyway change ddl auto to validate
+sql scripts in db/migration -> flyway connvention
+steps in my script for UUID migration-
+1. add new column newid (type UUID) in both tables
+2. deleting FK and remove PK constriant
+3.new Id as PK
+4. add new FK constraint
+5. delete old id column
+6. rename new column to id
+hibernate wrote 1st version, flyway makes flyway_schema_history -> stores 1st version : baseline version; but since flyway hasn't built any, mke a v1 ver for it so flyway can make v2
+flywaay has baseline schema and applies migrations on top of it : V2__id_to_uuid.sql (naming convention)
+1. write v1 baseline file (v1= baseline mysqldump without data, only structure)(same command with -- no data) (skip-add-drop = no delete command)
+2. tell flyway script already exists , it doesnt need to execute again, else flyway will fail :add 2 properties in pom.xml
+3. write v2 (main migration flyway should do)
+checksum? it is used to verify the original content (maintains immutability)
+
+Rerpesenting Inheritance:
+sometime when child has less attirbutes, so less nulls-approach 1: parent child everything in 1 table (eg : user, customer in 1 table: but con: lots of cols with null, sparse table , pro: reads bcum fast, coz joins TC is n^2)
+90% time preferred -approach 2: table/entity (user(id, email,name), customer (phone), seller(Gst) table - id acts as both FK + PK: pro: no null, cons: reads become slow: join for complete seller or customer info
+dont do 99.9% -approach 3: child tables only: customer (id, name, email, mob), seller(id, name, email,gst) pro: fast reads, no joins needed cons: lots of redundant data, hard to maintain
+
+if id is identity (1,2,3,4...) approaches in that case:
+a1: works; a2: doesnt work (id becomes same accross diff tables) a3: shared attribute for children tables (sql gets confused) (in case of concurrent req; where would id 1 go?)
+
+Unit Test: test individual unit of code in isolation (savenum(){find even number -return it +5 }) in unit, I want code to be tested independent of the external calls
+mock: pretend
+MCP creation bug :search product, max limit was issue if we were not passing max: this can be figured out in case of TDD - test driven developemtne,
+mockito helpful in testing: external calls, db calls and so on (service and repo)! but for controller layer, coz its web layer, invoked via API endpoints, not a func call, called by client - real world frontend! MOCK MVC: pretend client: mock client mimicks web req, sends JSON req, accepts JSON response
+before controller, logic of filters (auth check, exception handling): web MVC test: client req + filters (mocks https calls)
+
+Jacoco plugin: measures test coverage: fails build if test coverage below certain threshold %, doesnt allow compile,  if in CI/CD below certain thresholds, dont allow others to merge in your code
+just a plugin in pom.xml : in plugin
+<goal>prepare-agent</goal> : prepare jacoco to cover test case coverage
+test: prepare test report to verify
+limit : min should be 90%  coverage
+jacoco generates coverage, seen in console
+./mvnw verify in terminal
+files can be skipped while running Jacoco
+file:///Users/zebakhan/Documents/Capstone-Project-Sept-26/ProductCatalogService/target/site/jacoco/index.html
+exact point when test cases are to be run: after commit, on every push automatically : add simple yaml file
+yml file in workflows
+Integration Testing:
+
 
 * */
